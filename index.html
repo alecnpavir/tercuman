@@ -7,973 +7,756 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
-/* ── Reset & Tokens ─────────────────────────────── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 :root {
-  --bg:       #F0F2F8;
-  --card:     #FFFFFF;
-  --border:   #E2E6F0;
-  --ink:      #111827;
-  --sub:      #6B7280;
-  --pale:     #9CA3AF;
-  --blue:     #3B6FF0;
-  --blue-lt:  #EEF2FF;
-  --green:    #16A349;
-  --green-lt: #EDFAF3;
-  --red:      #E53E3E;
-  --red-lt:   #FFF5F5;
+  --bg:#F0F2F8; --card:#FFFFFF; --border:#E2E6F0;
+  --ink:#111827; --sub:#6B7280; --pale:#9CA3AF;
+  --blue:#3B6FF0; --blue-lt:#EEF2FF;
+  --green:#16A349; --green-lt:#EDFAF3;
+  --red:#E53E3E; --red-lt:#FFF5F5;
   --sp0:#3B6FF0; --sp0l:#EEF2FF;
   --sp1:#7C3AED; --sp1l:#F5F3FF;
   --sp2:#0891B2; --sp2l:#ECFEFF;
   --sp3:#D97706; --sp3l:#FFFBEB;
-  --r:        12px;
-  --font:     'Plus Jakarta Sans', system-ui, sans-serif;
-  --sab:      env(safe-area-inset-bottom, 0px);
+  --r:12px;
+  --font:'Plus Jakarta Sans', system-ui, sans-serif;
+  --sab:env(safe-area-inset-bottom, 0px);
+  --topbar:54px;
+  --nav:52px;
 }
 
-html, body {
-  height: 100%;
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--ink);
-  /* NO overflow:hidden on body — let layout control it */
-}
+html { height:100%; }
+body { height:100%; font-family:var(--font); background:var(--bg); color:var(--ink); overflow:hidden; }
 
-/* ── Root shell ────────────────────────────────── */
+/* ── Shell ── */
 #app {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  /* no overflow here — screens manage their own */
+  position:relative;
+  height:100dvh;
+  overflow:hidden;
 }
 
-/* ── Top bar ───────────────────────────────────── */
+/* ── Topbar ── */
 #topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 18px;
-  height: 54px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 10;
+  position:relative; z-index:20;
+  height:var(--topbar); flex-shrink:0;
+  display:flex; align-items:center; gap:10px;
+  padding:0 16px;
+  background:var(--card); border-bottom:1px solid var(--border);
 }
-.logo { font-size: 17px; font-weight: 800; letter-spacing: -.4px; }
-.logo em { font-style: normal; color: var(--blue); }
-.logo-sub { font-size: 10px; color: var(--pale); margin-top: 1px; }
-
-#status-pill {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 12px;
-  border-radius: 100px;
-  border: 1.5px solid var(--border);
-  font-size: 11px; font-weight: 600;
-  color: var(--sub);
-  background: var(--bg);
-  transition: all .25s;
-  max-width: 220px;
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+.logo { font-size:17px; font-weight:800; letter-spacing:-.4px; }
+.logo em { font-style:normal; color:var(--blue); }
+.logo-sub { font-size:10px; color:var(--pale); margin-top:1px; }
+#pill {
+  margin-left:auto;
+  display:flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:100px;
+  border:1.5px solid var(--border);
+  font-size:11px; font-weight:600; color:var(--sub);
+  background:var(--bg); transition:all .25s;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;
 }
-#status-pill.on  { border-color: var(--blue);  color: var(--blue);  background: var(--blue-lt); }
-#status-pill.err { border-color: var(--red);   color: var(--red);   background: var(--red-lt);  }
-.sdot { width:6px; height:6px; border-radius:50%; background:var(--pale); flex-shrink:0; transition:background .25s; }
-#status-pill.on .sdot { background:var(--blue); animation:blink 1.2s infinite; }
+#pill.on  { border-color:var(--blue); color:var(--blue); background:var(--blue-lt); }
+#pill.err { border-color:var(--red);  color:var(--red);  background:var(--red-lt); }
+.sdot { width:6px; height:6px; border-radius:50%; background:var(--pale); flex-shrink:0; }
+#pill.on .sdot { background:var(--blue); animation:blink 1.2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-/* ── Bottom nav ────────────────────────────────── */
-#bottom-nav {
-  display: flex;
-  background: var(--card);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-  padding-bottom: var(--sab);
+/* ── Bottom nav ── */
+#nav {
+  position:absolute; bottom:0; left:0; right:0; z-index:20;
+  height:calc(var(--nav) + var(--sab));
+  display:flex; background:var(--card); border-top:1px solid var(--border);
+  padding-bottom:var(--sab);
 }
-.nav-item {
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px;
-  padding: 9px 0;
-  border: none; background: transparent;
-  font-family: var(--font);
-  font-size: 10px; font-weight: 700;
-  color: var(--pale);
-  letter-spacing: .3px; text-transform: uppercase;
-  cursor: pointer;
-  transition: color .18s;
-  touch-action: manipulation;
+.ni {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; border:none; background:transparent;
+  font-family:var(--font); font-size:10px; font-weight:700;
+  color:var(--pale); text-transform:uppercase; letter-spacing:.4px;
+  cursor:pointer; touch-action:manipulation; transition:color .15s;
 }
-.nav-item .ni { font-size: 19px; transition: transform .18s; }
-.nav-item.on { color: var(--blue); }
-.nav-item.on .ni { transform: scale(1.12); }
+.ni .ic { font-size:20px; transition:transform .15s; }
+.ni.on { color:var(--blue); }
+.ni.on .ic { transform:scale(1.12); }
 
-/* ── Screen system ─────────────────────────────── */
-/*
-  Each screen fills the space between topbar and bottom-nav.
-  We use display:none / display:flex — no overflow:hidden on the shell.
-  Each screen controls its own overflow.
-*/
-.screen {
-  display: none;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;   /* allow flex children to shrink */
+/* ── Screens ── */
+/* KEY: screens fill remaining space between topbar and nav */
+.scr {
+  position:absolute;
+  top:var(--topbar);
+  bottom:calc(var(--nav) + var(--sab));
+  left:0; right:0;
+  overflow:hidden;
+  display:none;
 }
-.screen.on { display: flex; }
 
-/* ════════════════════════════════════════════════
-   SCREEN 0 — LISTEN
-════════════════════════════════════════════════ */
-#s-listen { /* flex column, children fill height */ }
-
-/* Speaker chips */
-.spk-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 14px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto; flex-shrink: 0;
+/* ════════════════════════════════
+   SCREEN A — MAIN (listen + reply)
+════════════════════════════════ */
+#sA {
+  display:none;
+  flex-direction:column;
 }
-.spk-row::-webkit-scrollbar { display: none; }
-.spk-lbl { font-size: 10px; font-weight: 700; color: var(--pale); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; }
+#sA.on { display:flex; }
+
+/* Speaker row */
+#spk-row {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px;
+  background:var(--card); border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+#spk-row::-webkit-scrollbar { display:none; }
+.spk-lbl { font-size:10px; font-weight:700; color:var(--pale); text-transform:uppercase; letter-spacing:.8px; white-space:nowrap; flex-shrink:0; }
 .chip {
-  padding: 6px 14px; border-radius: 20px;
-  border: 1.5px solid var(--border);
-  background: var(--bg); color: var(--sub);
-  font-family: var(--font); font-size: 12px; font-weight: 700;
-  cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  transition: all .15s;
-  touch-action: manipulation;
+  padding:5px 13px; border-radius:20px;
+  border:1.5px solid var(--border); background:var(--bg);
+  font-family:var(--font); font-size:12px; font-weight:700; color:var(--sub);
+  cursor:pointer; touch-action:manipulation; white-space:nowrap; flex-shrink:0;
+  transition:all .15s;
 }
-.chip.on { color: #fff; border-color: transparent; }
-.chip[data-sp="0"].on { background: var(--sp0); }
-.chip[data-sp="1"].on { background: var(--sp1); }
-.chip[data-sp="2"].on { background: var(--sp2); }
-.chip[data-sp="3"].on { background: var(--sp3); }
+.chip.on { color:#fff; border-color:transparent; }
+.chip[data-i="0"].on { background:var(--sp0); }
+.chip[data-i="1"].on { background:var(--sp1); }
+.chip[data-i="2"].on { background:var(--sp2); }
+.chip[data-i="3"].on { background:var(--sp3); }
 
-/* Two transcript panels */
-.panels {
-  display: flex;
-  flex: 1;
-  min-height: 0;  /* CRITICAL: allow flex children to scroll */
-  overflow: hidden;
+/* Transcript area: fills remaining space above reply box */
+#transcript {
+  flex:1; min-height:0;
+  display:flex; overflow:hidden;
 }
 .pane {
-  flex: 1;
-  display: flex; flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid var(--border);
-  overflow: hidden;
+  flex:1; min-width:0;
+  display:flex; flex-direction:column;
+  border-right:1px solid var(--border); overflow:hidden;
 }
-.pane:last-child { border-right: none; }
-.pane-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 14px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+.pane:last-child { border-right:none; }
+.pane-hd {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:6px;
+  padding:7px 12px;
+  background:var(--bg); border-bottom:1px solid var(--border);
 }
-.pane-title { font-size: 10px; font-weight: 700; color: var(--pale); text-transform: uppercase; letter-spacing: 1.2px; }
-.pane-flag { margin-left: auto; font-size: 14px; }
-
-.scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 10px;
-  display: flex; flex-direction: column; gap: 7px;
+.pane-title { font-size:10px; font-weight:700; color:var(--pale); text-transform:uppercase; letter-spacing:1px; }
+.pane-flag { margin-left:auto; font-size:13px; }
+.feed {
+  flex:1; min-height:0;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:10px;
+  display:flex; flex-direction:column; gap:7px;
 }
-.scroll::-webkit-scrollbar { width: 3px; }
-.scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.feed::-webkit-scrollbar { width:3px; }
+.feed::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 
 /* Bubbles */
-.bubble {
-  padding: 9px 12px;
-  border-radius: 10px;
-  border-left: 3px solid var(--border);
-  font-size: 13.5px; line-height: 1.6;
-  animation: pop .2s ease;
+.bbl {
+  padding:9px 11px; border-radius:10px;
+  border-left:3px solid var(--border);
+  font-size:13.5px; line-height:1.6;
+  animation:pop .2s ease;
 }
-@keyframes pop { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-
-.bubble.interim { color: var(--pale); font-style: italic; font-size: 13px; }
-.bubble.tr  { background: var(--green-lt); border-left-color: var(--green); color: #14532d; }
-.bubble.s0  { background: var(--sp0l); border-left-color: var(--sp0); }
-.bubble.s1  { background: var(--sp1l); border-left-color: var(--sp1); }
-.bubble.s2  { background: var(--sp2l); border-left-color: var(--sp2); }
-.bubble.s3  { background: var(--sp3l); border-left-color: var(--sp3); }
-
-.bmeta { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+@keyframes pop { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.bbl.interim { color:var(--pale); font-style:italic; font-size:13px; }
+.bbl.en-tr   { background:var(--green-lt); border-left-color:var(--green); color:#14532d; }
+.bbl.s0 { background:var(--sp0l); border-left-color:var(--sp0); }
+.bbl.s1 { background:var(--sp1l); border-left-color:var(--sp1); }
+.bbl.s2 { background:var(--sp2l); border-left-color:var(--sp2); }
+.bbl.s3 { background:var(--sp3l); border-left-color:var(--sp3); }
+.bmeta { display:flex; align-items:center; gap:5px; margin-bottom:3px; }
 .btime { font-size:10px; color:var(--pale); }
-.btag  { font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; color:#fff; }
-.btag.s0{background:var(--sp0)} .btag.s1{background:var(--sp1)} .btag.s2{background:var(--sp2)} .btag.s3{background:var(--sp3)}
-.btag.tr-tag{background:var(--green)}
+.btag  { font-size:10px; font-weight:700; padding:1px 6px; border-radius:8px; color:#fff; }
+.t0{background:var(--sp0)} .t1{background:var(--sp1)} .t2{background:var(--sp2)} .t3{background:var(--sp3)}
+.ttr{background:var(--green)}
+.empty-feed {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:5px; padding:20px; text-align:center;
+  color:var(--pale); font-size:13px; line-height:1.8; flex:1;
+}
+.empty-ico { font-size:26px; opacity:.45; }
 
-.empty {
-  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:6px; padding:20px; text-align:center;
-  color: var(--pale); font-size: 13px; line-height: 1.8;
-}
-.empty-ico { font-size: 28px; opacity: .5; }
-
-/* Mic bar */
-.mic-bar {
-  display: flex; align-items: center; justify-content: center; gap: 14px;
-  padding: 12px 18px calc(12px + var(--sab));
-  background: var(--card);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.mic-btn {
-  width: 58px; height: 58px; border-radius: 50%; border: none;
-  background: var(--blue); color: #fff; font-size: 24px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; touch-action: manipulation;
-  transition: all .2s;
-  box-shadow: 0 4px 14px rgba(59,111,240,.4);
-}
-.mic-btn.rec { background: var(--red); box-shadow: 0 4px 14px rgba(229,62,62,.4); animation: mpulse 1.8s infinite; }
-@keyframes mpulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
-.mic-lbl { font-size: 11px; font-weight: 700; color: var(--sub); min-width:60px; text-align:center; text-transform:uppercase; letter-spacing:.5px; }
-.icon-btn {
-  width:40px; height:40px; border-radius:50%;
-  border:1.5px solid var(--border); background:var(--bg);
-  color:var(--sub); font-size:16px;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; touch-action:manipulation; transition:background .15s;
-}
-.icon-btn:active { background: var(--border); }
-
-/* ════════════════════════════════════════════════
-   SCREEN 1 — REPLY
-════════════════════════════════════════════════ */
-#s-reply {
-  /* flex column; two equal halves */
+/* Reply box — fixed height, at bottom */
+#reply-box {
+  flex-shrink:0;
+  height:160px;
+  border-top:2px solid var(--border);
+  display:flex; flex-direction:column;
+  background:var(--card);
 }
 .reply-half {
-  flex: 1; min-height: 0;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
+  flex:1; min-height:0;
+  display:flex; flex-direction:column;
+  border-bottom:1px solid var(--border);
 }
-.reply-half:last-child { border-bottom: none; }
-.reply-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
+.reply-half:last-child { border-bottom:none; }
+.rh-head {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:7px;
+  padding:8px 13px;
+  border-bottom:1px solid var(--border);
 }
-.reply-head.blue { border-top: 3px solid var(--blue); background: var(--blue-lt); }
-.reply-head.green { border-top: 3px solid var(--green); background: var(--green-lt); }
-.rh-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; }
-.reply-head.blue  .rh-label { color: var(--blue); }
-.reply-head.green .rh-label { color: var(--green); }
-.rh-right { margin-left: auto; display:flex; align-items:center; gap:8px; }
+.rh-head.bl { border-top:3px solid var(--blue); background:var(--blue-lt); }
+.rh-head.gr { border-top:3px solid var(--green); background:var(--green-lt); }
+.rh-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.rh-head.bl .rh-lbl { color:var(--blue); }
+.rh-head.gr .rh-lbl { color:var(--green); }
+.rh-right { margin-left:auto; display:flex; align-items:center; gap:7px; }
 .copy-btn {
-  padding: 5px 12px; border-radius: 8px;
-  border: 1.5px solid var(--border); background: var(--card);
-  font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--sub);
-  cursor: pointer; touch-action: manipulation; transition: all .15s;
+  padding:4px 11px; border-radius:7px;
+  border:1.5px solid var(--border); background:var(--card);
+  font-family:var(--font); font-size:11px; font-weight:700; color:var(--sub);
+  cursor:pointer; touch-action:manipulation; transition:background .15s;
 }
-.copy-btn:active { background: var(--border); }
+.copy-btn:active { background:var(--border); }
 textarea {
-  flex: 1; min-height: 0;
-  border: none; outline: none; resize: none;
-  padding: 12px 14px;
-  font-family: var(--font); font-size: 15px; line-height: 1.7; color: var(--ink);
-  background: transparent; caret-color: var(--blue);
-  -webkit-overflow-scrolling: touch;
+  flex:1; min-height:0;
+  border:none; outline:none; resize:none;
+  padding:10px 13px;
+  font-family:var(--font); font-size:15px; line-height:1.65; color:var(--ink);
+  background:transparent; caret-color:var(--blue);
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
-textarea::placeholder { color: var(--pale); }
-#reply-out {
-  flex: 1; min-height: 0;
-  padding: 12px 14px; overflow-y: auto;
-  font-size: 15px; line-height: 1.7;
-  -webkit-overflow-scrolling: touch;
-  white-space: pre-wrap;
-  color: var(--pale); font-style: italic;
+textarea::placeholder { color:var(--pale); }
+#rout {
+  flex:1; min-height:0;
+  padding:10px 13px; overflow-y:auto;
+  font-size:15px; line-height:1.65;
+  -webkit-overflow-scrolling:touch; white-space:pre-wrap;
+  color:var(--pale); font-style:italic;
 }
-#reply-out.filled { color: #14532d; font-style: normal; font-weight: 500; }
+#rout.filled { color:#14532d; font-style:normal; font-weight:500; }
 
-/* dots loader */
-.dots { display:flex; align-items:center; gap:4px; }
+/* Dots */
+.dots { display:flex; gap:4px; align-items:center; }
 .dot { width:6px; height:6px; border-radius:50%; background:var(--pale); animation:dl 1.1s infinite ease-in-out; }
 .dot:nth-child(2){animation-delay:.18s} .dot:nth-child(3){animation-delay:.36s}
 @keyframes dl { 0%,80%,100%{transform:scale(.5);opacity:.3} 40%{transform:scale(1);opacity:1} }
 
-/* ════════════════════════════════════════════════
-   SCREEN 2 — SETTINGS
-════════════════════════════════════════════════ */
-#s-settings {
-  overflow-y: auto;   /* scroll here, not on body */
-  -webkit-overflow-scrolling: touch;
-  padding: 14px;
-  gap: 12px;
-  background: var(--bg);
+/* Mic bar */
+#mic-bar {
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  padding:10px 16px;
+  background:var(--card); border-top:1px solid var(--border);
 }
+.mic-btn {
+  width:54px; height:54px; border-radius:50%; border:none;
+  background:var(--blue); color:#fff; font-size:22px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; touch-action:manipulation; transition:all .2s;
+  box-shadow:0 4px 14px rgba(59,111,240,.38);
+}
+.mic-btn.rec { background:var(--red); box-shadow:0 4px 14px rgba(229,62,62,.4); animation:mp 1.8s infinite; }
+@keyframes mp { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+#mic-lbl { font-size:11px; font-weight:700; color:var(--sub); min-width:55px; text-align:center; text-transform:uppercase; letter-spacing:.4px; }
+.icon-btn {
+  width:38px; height:38px; border-radius:50%;
+  border:1.5px solid var(--border); background:var(--bg); color:var(--sub); font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; touch-action:manipulation;
+}
+.icon-btn:active { background:var(--border); }
 
-.scard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
+/* ════════════════════════════════
+   SCREEN B — SETTINGS
+   CRITICAL: overflow-y:auto here, NOT on parent
+════════════════════════════════ */
+#sB {
+  display:none;
+  overflow-y:scroll;
+  -webkit-overflow-scrolling:touch;
+  padding:14px;
+  background:var(--bg);
 }
-.scard-title {
-  padding: 11px 16px;
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pale);
-  background: var(--bg); border-bottom: 1px solid var(--border);
-}
-.scard-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+#sB.on { display:block; }
+#sB .scard { margin-bottom:12px; }
+#sB .scard:last-child { margin-bottom:0; }
 
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label {
-  font-size: 13px; font-weight: 600; color: var(--ink);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.field-val {
-  font-size: 12px; font-weight: 700; color: var(--blue);
-  background: var(--blue-lt); padding: 2px 9px; border-radius: 6px; min-width:42px; text-align:center;
-}
-.field-hint { font-size: 12px; color: var(--pale); line-height: 1.5; }
+.scard { background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.sc-title { padding:10px 15px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--pale); background:var(--bg); border-bottom:1px solid var(--border); }
+.sc-body { padding:15px; display:flex; flex-direction:column; gap:13px; }
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.f-lbl { font-size:13px; font-weight:600; color:var(--ink); display:flex; justify-content:space-between; align-items:center; }
+.f-val { font-size:12px; font-weight:700; color:var(--blue); background:var(--blue-lt); padding:2px 9px; border-radius:6px; min-width:42px; text-align:center; }
+.f-hint { font-size:12px; color:var(--pale); line-height:1.5; }
 
 input[type="text"], input[type="password"] {
-  padding: 11px 13px;
-  border: 1.5px solid var(--border); border-radius: 10px;
-  background: var(--bg); color: var(--ink);
-  font-family: var(--font); font-size: 15px;
-  outline: none; transition: border-color .2s; width: 100%;
+  padding:11px 13px; border:1.5px solid var(--border); border-radius:10px;
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font); font-size:15px; outline:none;
+  transition:border-color .2s; width:100%;
 }
-input[type="text"]:focus, input[type="password"]:focus { border-color: var(--blue); background: var(--card); }
-input[type="text"]::placeholder, input[type="password"]::placeholder { color: var(--pale); }
+input[type="text"]:focus, input[type="password"]:focus { border-color:var(--blue); background:var(--card); }
+input[type="text"]::placeholder, input[type="password"]::placeholder { color:var(--pale); }
 
 input[type="range"] {
-  -webkit-appearance: none; width: 100%; height: 5px;
-  border-radius: 3px; background: var(--border); outline: none; cursor: pointer;
+  -webkit-appearance:none; width:100%; height:5px;
+  border-radius:3px; background:var(--border); outline:none; cursor:pointer;
 }
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 22px; height: 22px;
-  border-radius: 50%; background: var(--blue);
-  box-shadow: 0 2px 6px rgba(59,111,240,.35);
+  -webkit-appearance:none; width:22px; height:22px;
+  border-radius:50%; background:var(--blue);
+  box-shadow:0 2px 6px rgba(59,111,240,.3);
 }
 
-.spk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.spk-row-item { display: flex; align-items: center; gap: 8px; }
-.sp-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.spk-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.spk-item { display:flex; align-items:center; gap:8px; }
+.sp-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 
-.preset-row { display: flex; flex-wrap: wrap; gap: 7px; }
-.preset-btn {
-  padding: 7px 14px; border-radius: 10px;
-  border: 1.5px solid var(--border); background: var(--bg);
-  font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--sub);
-  cursor: pointer; touch-action: manipulation; transition: all .15s;
+.preset-row { display:flex; flex-wrap:wrap; gap:7px; }
+.pchip {
+  padding:7px 13px; border-radius:10px;
+  border:1.5px solid var(--border); background:var(--bg);
+  font-family:var(--font); font-size:12px; font-weight:700; color:var(--sub);
+  cursor:pointer; touch-action:manipulation; transition:all .15s;
 }
-.preset-btn.on { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+.pchip.on { border-color:var(--blue); color:var(--blue); background:var(--blue-lt); }
 
 .big-btn {
-  width: 100%; padding: 14px;
-  border-radius: 12px; border: none;
-  font-family: var(--font); font-size: 14px; font-weight: 700;
-  cursor: pointer; touch-action: manipulation; transition: all .18s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width:100%; padding:14px; border-radius:12px; border:none;
+  font-family:var(--font); font-size:14px; font-weight:700;
+  cursor:pointer; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  transition:all .18s;
 }
-.big-btn.green { background: var(--green); color: #fff; }
-.big-btn.green:active { background: #128840; }
+.big-btn.green { background:var(--green); color:#fff; }
+.big-btn.green:active { background:#128840; }
+.saved { font-size:12px; font-weight:600; color:var(--green); text-align:center; min-height:16px; }
 
-.saved-note { font-size: 12px; font-weight: 600; color: var(--green); text-align:center; height:16px; }
-
-/* ── Toast ─────────────────────────────────────── */
+/* ── Toast ── */
 #toast {
-  position: fixed; z-index: 999;
-  bottom: calc(74px + var(--sab)); left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  background: #1e293b; color: #fff;
-  padding: 9px 18px; border-radius: 20px;
-  font-size: 13px; font-weight: 600;
-  opacity: 0; pointer-events: none;
-  transition: all .22s; white-space: nowrap;
+  position:fixed; z-index:999;
+  bottom:calc(var(--nav) + var(--sab) + 12px); left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:#1e293b; color:#fff;
+  padding:9px 18px; border-radius:20px;
+  font-size:13px; font-weight:600;
+  opacity:0; pointer-events:none;
+  transition:all .22s; white-space:nowrap;
 }
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* ── Desktop tweaks ≥768 ────────────────────────── */
-@media (min-width: 768px) {
-  #topbar { padding: 0 24px; height: 56px; }
-  .logo { font-size: 19px; }
+/* ── Desktop ≥ 768px ── */
+@media(min-width:768px) {
+  /* reply box: side by side */
+  #reply-box { flex-direction:row; height:200px; }
+  .reply-half { border-bottom:none; border-right:1px solid var(--border); }
+  .reply-half:last-child { border-right:none; }
 
-  /* reply: side by side */
-  #s-reply { flex-direction: row; }
-  .reply-half { border-bottom: none; border-right: 1px solid var(--border); }
-  .reply-half:last-child { border-right: none; }
+  /* settings wider */
+  #sB { padding:22px; }
+  .spk-grid { grid-template-columns:repeat(4,1fr); }
 
-  /* settings: wider padding */
-  #s-settings { padding: 22px; gap: 16px; }
-  .spk-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
-
-  #toast { bottom: 60px; }
+  #toast { bottom:64px; }
 }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- TOP BAR -->
-  <div id="topbar">
-    <div>
-      <div class="logo">Ter<em>cü</em>man</div>
-      <div class="logo-sub">Gerçek zamanlı toplantı çevirisi</div>
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="logo">Ter<em>cü</em>man</div>
+    <div class="logo-sub">Gerçek zamanlı toplantı çevirisi</div>
+  </div>
+  <div id="pill"><div class="sdot"></div><span id="pill-txt">Hazır</span></div>
+</div>
+
+<!-- ══ SCREEN A: ANA EKRAN ══ -->
+<div id="sA" class="scr on">
+
+  <!-- Speaker chips -->
+  <div id="spk-row">
+    <span class="spk-lbl">Konuşan:</span>
+    <button class="chip on" data-i="0" id="c0" onclick="pickSp(0)">Kişi 1</button>
+    <button class="chip"    data-i="1" id="c1" onclick="pickSp(1)">Kişi 2</button>
+    <button class="chip"    data-i="2" id="c2" onclick="pickSp(2)">Kişi 3</button>
+    <button class="chip"    data-i="3" id="c3" onclick="pickSp(3)">Kişi 4</button>
+  </div>
+
+  <!-- Transcript (EN + TR side by side) -->
+  <div id="transcript">
+    <div class="pane">
+      <div class="pane-hd"><span class="pane-title">Konuşulanlar</span><span class="pane-flag">🇬🇧</span></div>
+      <div class="feed" id="orig"><div class="empty-feed"><div class="empty-ico">🎙️</div>Mikrofonu başlat.<br>İngilizce konuşmalar burada görünür.</div></div>
     </div>
-    <div id="status-pill">
-      <div class="sdot"></div>
-      <span id="status-text">Hazır</span>
+    <div class="pane">
+      <div class="pane-hd"><span class="pane-title">Türkçe Çeviri</span><span class="pane-flag">🇹🇷</span></div>
+      <div class="feed" id="tr"><div class="empty-feed"><div class="empty-ico">🌐</div>Çeviri burada görünür.</div></div>
     </div>
   </div>
 
-  <!-- ══ SCREEN 0: DİNLE ══════════════════════════ -->
-  <div id="s-listen" class="screen on">
-
-    <!-- Speaker selector -->
-    <div class="spk-row">
-      <span class="spk-lbl">Konuşan:</span>
-      <button class="chip on" data-sp="0" id="chip0" onclick="pickSpeaker(0)">Kişi 1</button>
-      <button class="chip"    data-sp="1" id="chip1" onclick="pickSpeaker(1)">Kişi 2</button>
-      <button class="chip"    data-sp="2" id="chip2" onclick="pickSpeaker(2)">Kişi 3</button>
-      <button class="chip"    data-sp="3" id="chip3" onclick="pickSpeaker(3)">Kişi 4</button>
-    </div>
-
-    <!-- Transcript panels -->
-    <div class="panels">
-      <div class="pane">
-        <div class="pane-head">
-          <span class="pane-title">Konuşulanlar</span>
-          <span class="pane-flag">🇬🇧</span>
-        </div>
-        <div class="scroll" id="orig-area">
-          <div class="empty"><div class="empty-ico">🎙️</div>Mikrofonu başlat.<br>İngilizce konuşmalar burada görünür.</div>
-        </div>
-      </div>
-      <div class="pane">
-        <div class="pane-head">
-          <span class="pane-title">Türkçe Çeviri</span>
-          <span class="pane-flag">🇹🇷</span>
-        </div>
-        <div class="scroll" id="tr-area">
-          <div class="empty"><div class="empty-ico">🌐</div>Çeviri burada görünür.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mic controls -->
-    <div class="mic-bar">
-      <button class="icon-btn" onclick="clearAll()" title="Temizle">🗑️</button>
-      <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎙️</button>
-      <span class="mic-lbl" id="mic-lbl">Başlat</span>
-    </div>
-
-  </div>
-
-  <!-- ══ SCREEN 1: YANIT ══════════════════════════ -->
-  <div id="s-reply" class="screen">
-
+  <!-- Reply box -->
+  <div id="reply-box">
     <div class="reply-half">
-      <div class="reply-head blue">
-        <span class="rh-label">✏️ Türkçe Yanıtın</span>
+      <div class="rh-head bl">
+        <span class="rh-lbl">✏️ Türkçe Yanıtın</span>
       </div>
-      <textarea id="reply-in" placeholder="Türkçe yanıtını buraya yaz…&#10;Sağda anında İngilizce çevirisi belirir."></textarea>
+      <textarea id="rin" placeholder="Türkçe yanıtını buraya yaz…&#10;Sağda anında İngilizce çevirisi belirir."></textarea>
     </div>
-
     <div class="reply-half">
-      <div class="reply-head green">
-        <span class="rh-label">🇬🇧 İngilizce</span>
+      <div class="rh-head gr">
+        <span class="rh-lbl">🇬🇧 İngilizce</span>
         <div class="rh-right">
-          <div class="dots" id="tr-dots" style="display:none">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          </div>
+          <div class="dots" id="rdots" style="display:none"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
           <button class="copy-btn" onclick="copyReply()">📋 Kopyala</button>
         </div>
       </div>
-      <div id="reply-out">İngilizce çeviri burada belirecek…</div>
+      <div id="rout">İngilizce çeviri burada belirecek…</div>
     </div>
-
   </div>
 
-  <!-- ══ SCREEN 2: AYARLAR ═════════════════════════ -->
-  <div id="s-settings" class="screen">
-
-    <!-- API & Context -->
-    <div class="scard">
-      <div class="scard-title">🔑 Bağlantı</div>
-      <div class="scard-body">
-        <div class="field">
-          <div class="field-label">Anthropic API Key</div>
-          <input type="password" id="api-key" placeholder="sk-ant-api03-…" oninput="onKey(this.value)">
-          <div class="saved-note" id="saved-note"></div>
-        </div>
-        <div class="field">
-          <div class="field-label">Toplantı Konusu</div>
-          <input type="text" id="ctx-input" placeholder="örn: fraud system review, budget meeting…">
-        </div>
-      </div>
-    </div>
-
-    <!-- Speakers -->
-    <div class="scard">
-      <div class="scard-title">👤 Konuşmacılar</div>
-      <div class="scard-body">
-        <div class="spk-grid">
-          <div class="spk-row-item"><div class="sp-dot" style="background:var(--sp0)"></div><input type="text" id="sp0" value="Kişi 1" oninput="onSpName(0)"></div>
-          <div class="spk-row-item"><div class="sp-dot" style="background:var(--sp1)"></div><input type="text" id="sp1" value="Kişi 2" oninput="onSpName(1)"></div>
-          <div class="spk-row-item"><div class="sp-dot" style="background:var(--sp2)"></div><input type="text" id="sp2" value="Kişi 3" oninput="onSpName(2)"></div>
-          <div class="spk-row-item"><div class="sp-dot" style="background:var(--sp3)"></div><input type="text" id="sp3" value="Kişi 4" oninput="onSpName(3)"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Audio sensitivity -->
-    <div class="scard">
-      <div class="scard-title">⚙️ Ses Hassasiyeti</div>
-      <div class="scard-body">
-        <div class="field">
-          <div class="field-label">Güven Eşiği <span class="field-val" id="conf-v">60%</span></div>
-          <input type="range" id="conf-r" min="0" max="95" value="60" step="5" oninput="onCfg('conf',this.value)">
-          <div class="field-hint">Düşük güvenli tanımaları filtreler. Gürültülü ortamda artır.</div>
-        </div>
-        <div class="field">
-          <div class="field-label">Sessizlik Süresi <span class="field-val" id="sil-v">800ms</span></div>
-          <input type="range" id="sil-r" min="300" max="2000" value="800" step="100" oninput="onCfg('sil',this.value)">
-          <div class="field-hint">Cümle durduğunda çeviri için bekleme süresi.</div>
-        </div>
-        <div class="field">
-          <div class="field-label">Min. Kelime <span class="field-val" id="minw-v">2</span></div>
-          <input type="range" id="minw-r" min="1" max="8" value="2" step="1" oninput="onCfg('minw',this.value)">
-          <div class="field-hint">Bu sayının altındaki tanımaları yok sayar.</div>
-        </div>
-        <div class="field">
-          <div class="field-label">Hızlı Seç</div>
-          <div class="preset-row">
-            <button class="preset-btn" onclick="preset('quiet',this)">🔕 Sessiz</button>
-            <button class="preset-btn on"  onclick="preset('normal',this)">🏢 Normal</button>
-            <button class="preset-btn" onclick="preset('noisy',this)">🔊 Gürültülü</button>
-            <button class="preset-btn" onclick="preset('online',this)">💻 Online</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Export -->
-    <div class="scard">
-      <div class="scard-title">📁 Transkript</div>
-      <div class="scard-body">
-        <button class="big-btn green" onclick="exportTxt()">📄 TXT Olarak İndir</button>
-      </div>
-    </div>
-
+  <!-- Mic bar -->
+  <div id="mic-bar">
+    <button class="icon-btn" onclick="clearAll()" title="Temizle">🗑️</button>
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎙️</button>
+    <span id="mic-lbl">Başlat</span>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <div id="bottom-nav">
-    <button class="nav-item on" id="nav0" onclick="goTo(0)"><span class="ni">🎙️</span>Dinle</button>
-    <button class="nav-item"    id="nav1" onclick="goTo(1)"><span class="ni">✏️</span>Yanıtla</button>
-    <button class="nav-item"    id="nav2" onclick="goTo(2)"><span class="ni">⚙️</span>Ayarlar</button>
+</div><!-- /sA -->
+
+<!-- ══ SCREEN B: AYARLAR ══ -->
+<div id="sB" class="scr">
+
+  <div class="scard">
+    <div class="sc-title">🔑 Bağlantı</div>
+    <div class="sc-body">
+      <div class="field">
+        <div class="f-lbl">Anthropic API Key</div>
+        <input type="password" id="api-key" placeholder="sk-ant-api03-…" oninput="onKey(this.value)">
+        <div class="saved" id="saved"></div>
+      </div>
+      <div class="field">
+        <div class="f-lbl">Toplantı Konusu</div>
+        <input type="text" id="ctx" placeholder="örn: fraud system review, budget meeting…">
+      </div>
+    </div>
   </div>
+
+  <div class="scard">
+    <div class="sc-title">👤 Konuşmacılar</div>
+    <div class="sc-body">
+      <div class="spk-grid">
+        <div class="spk-item"><div class="sp-dot" style="background:var(--sp0)"></div><input type="text" id="sp0" value="Kişi 1" oninput="onSpName(0)"></div>
+        <div class="spk-item"><div class="sp-dot" style="background:var(--sp1)"></div><input type="text" id="sp1" value="Kişi 2" oninput="onSpName(1)"></div>
+        <div class="spk-item"><div class="sp-dot" style="background:var(--sp2)"></div><input type="text" id="sp2" value="Kişi 3" oninput="onSpName(2)"></div>
+        <div class="spk-item"><div class="sp-dot" style="background:var(--sp3)"></div><input type="text" id="sp3" value="Kişi 4" oninput="onSpName(3)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scard">
+    <div class="sc-title">⚙️ Ses Hassasiyeti</div>
+    <div class="sc-body">
+      <div class="field">
+        <div class="f-lbl">Güven Eşiği <span class="f-val" id="cv">60%</span></div>
+        <input type="range" id="cr" min="0" max="95" value="60" step="5" oninput="onCfg('conf',this.value)">
+        <div class="f-hint">Düşük güvenli tanımaları filtreler. Gürültülü ortamda artır.</div>
+      </div>
+      <div class="field">
+        <div class="f-lbl">Sessizlik Süresi <span class="f-val" id="sv">800ms</span></div>
+        <input type="range" id="sr" min="300" max="2000" value="800" step="100" oninput="onCfg('sil',this.value)">
+        <div class="f-hint">Cümle durduğunda çeviri için bekleme.</div>
+      </div>
+      <div class="field">
+        <div class="f-lbl">Min. Kelime <span class="f-val" id="mv">2</span></div>
+        <input type="range" id="mr" min="1" max="8" value="2" step="1" oninput="onCfg('minw',this.value)">
+        <div class="f-hint">Kısa gürültü patlamalarını yok sayar.</div>
+      </div>
+      <div class="field">
+        <div class="f-lbl">Hızlı Seç</div>
+        <div class="preset-row">
+          <button class="pchip" onclick="preset('quiet',this)">🔕 Sessiz</button>
+          <button class="pchip on" onclick="preset('normal',this)">🏢 Normal</button>
+          <button class="pchip" onclick="preset('noisy',this)">🔊 Gürültülü</button>
+          <button class="pchip" onclick="preset('online',this)">💻 Online</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scard">
+    <div class="sc-title">📁 Transkript</div>
+    <div class="sc-body">
+      <button class="big-btn green" onclick="exportTxt()">📄 TXT Olarak İndir</button>
+    </div>
+  </div>
+
+</div><!-- /sB -->
+
+<!-- BOTTOM NAV -->
+<div id="nav">
+  <button class="ni on" id="n0" onclick="goTo(0)"><span class="ic">🎙️</span>Toplantı</button>
+  <button class="ni"    id="n1" onclick="goTo(1)"><span class="ic">⚙️</span>Ayarlar</button>
+</div>
 
 </div><!-- #app -->
-
 <div id="toast"></div>
 
 <script>
 'use strict';
+// ── IDs ──────────────────────────────────────────────
+const $ = id => document.getElementById(id);
 
-/* ── Constants ────────────────────────────────── */
-const SCREEN_IDS = ['s-listen','s-reply','s-settings'];
-const NAV_IDS    = ['nav0','nav1','nav2'];
-const SP_COLORS  = ['sp0','sp1','sp2','sp3'];
-const PRESETS    = {
-  quiet:  {conf:30, sil:600,  minw:1},
-  normal: {conf:60, sil:800,  minw:2},
-  noisy:  {conf:75, sil:1200, minw:3},
-  online: {conf:50, sil:700,  minw:2},
-};
+// ── State ────────────────────────────────────────────
+let listening=false, rec=null;
+let iEl=null;           // interim bubble element
+let pending='', debT=null;
+let hasOrig=false, hasTr=false;
+let activeSp=0;
+let speakers=['Kişi 1','Kişi 2','Kişi 3','Kişi 4'];
+let log=[];
+let cfg={conf:60, sil:800, minw:2};
+let rTimer=null, lastR='', keyT=null;
 
-/* ── State ────────────────────────────────────── */
-let curScreen   = 0;
-let listening   = false;
-let rec         = null;
-let interimEl   = null;   // interim bubble DOM node (may be null)
-let pending     = '';
-let debT        = null;
-let hasOrig     = false;  // whether orig-area has real content
-let hasTr       = false;
-let activeSp    = 0;
-let speakers    = ['Kişi 1','Kişi 2','Kişi 3','Kişi 4'];
-let log         = [];
-let cfg         = {conf:60, sil:800, minw:2};
-let replyT      = null;
-let lastReply   = '';
-let keyT        = null;
-
-/* ── Init ─────────────────────────────────────── */
+// ── Init ─────────────────────────────────────────────
 (function(){
-  // Restore API key
-  const k = localStorage.getItem('tc_key');
-  if(k) el('api-key').value = k;
+  const k=localStorage.getItem('tc_key');
+  if(k) $('api-key').value=k;
 
-  // Restore cfg
-  try {
-    const s = localStorage.getItem('tc_cfg');
-    if(s) cfg = {...cfg, ...JSON.parse(s)};
-  } catch(e){}
+  try{ const s=localStorage.getItem('tc_cfg'); if(s) cfg={...cfg,...JSON.parse(s)}; }catch(e){}
   syncSliders();
 
-  // Restore speakers
-  try {
-    const s = localStorage.getItem('tc_sp');
-    if(s) {
-      speakers = JSON.parse(s);
-      speakers.forEach((n,i) => { el('sp'+i).value = n; });
-    }
-  } catch(e){}
+  try{ const s=localStorage.getItem('tc_sp'); if(s){ speakers=JSON.parse(s); speakers.forEach((n,i)=>$('sp'+i).value=n); } }catch(e){}
   syncChips();
 
-  // Reply textarea listener
-  el('reply-in').addEventListener('input', onReplyInput);
+  $('rin').addEventListener('input', onReplyInput);
+
 })();
 
-/* ── Navigation ───────────────────────────────── */
-function goTo(i) {
-  curScreen = i;
-  SCREEN_IDS.forEach((id,j) => el(id).classList.toggle('on', j===i));
-  NAV_IDS.forEach((id,j)    => el(id).classList.toggle('on', j===i));
+// ── Navigation ───────────────────────────────────────
+function goTo(i){
+  [$('sA'),$('sB')].forEach((s,j)=>{ s.classList.toggle('on',j===i); });
+  [$('n0'),$('n1')].forEach((b,j)=>{ b.classList.toggle('on',j===i); });
 }
 
-/* ── Speaker management ───────────────────────── */
-function pickSpeaker(i) {
-  activeSp = i;
+// ── Speakers ─────────────────────────────────────────
+function pickSp(i){ activeSp=i; syncChips(); }
+
+function onSpName(i){
+  speakers[i]=$('sp'+i).value.trim()||('Kişi '+(i+1));
+  localStorage.setItem('tc_sp',JSON.stringify(speakers));
   syncChips();
 }
 
-function onSpName(i) {
-  speakers[i] = el('sp'+i).value.trim() || ('Kişi '+(i+1));
-  localStorage.setItem('tc_sp', JSON.stringify(speakers));
-  syncChips();
-}
-
-function syncChips() {
-  for(let i=0;i<4;i++) {
-    const c = el('chip'+i);
-    c.textContent = speakers[i];
-    c.classList.toggle('on', i===activeSp);
+function syncChips(){
+  for(let i=0;i<4;i++){
+    const c=$('c'+i); c.textContent=speakers[i]; c.classList.toggle('on',i===activeSp);
   }
 }
 
-/* ── Settings ─────────────────────────────────── */
-function onCfg(key, val) {
-  cfg[key] = parseInt(val);
-  if(key==='conf') el('conf-v').textContent = val+'%';
-  if(key==='sil')  el('sil-v').textContent  = val+'ms';
-  if(key==='minw') el('minw-v').textContent = val;
-  localStorage.setItem('tc_cfg', JSON.stringify(cfg));
-  // clear preset highlight
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('on'));
+// ── Settings ─────────────────────────────────────────
+function onCfg(key,val){
+  cfg[key]=parseInt(val);
+  if(key==='conf'){ $('cv').textContent=val+'%'; }
+  if(key==='sil') { $('sv').textContent=val+'ms'; }
+  if(key==='minw'){ $('mv').textContent=val; }
+  localStorage.setItem('tc_cfg',JSON.stringify(cfg));
+  document.querySelectorAll('.pchip').forEach(b=>b.classList.remove('on'));
 }
 
-function syncSliders() {
-  el('conf-r').value = cfg.conf; el('conf-v').textContent = cfg.conf+'%';
-  el('sil-r').value  = cfg.sil;  el('sil-v').textContent  = cfg.sil+'ms';
-  el('minw-r').value = cfg.minw; el('minw-v').textContent = cfg.minw;
-}
+const PRESETS={quiet:{conf:30,sil:600,minw:1},normal:{conf:60,sil:800,minw:2},noisy:{conf:75,sil:1200,minw:3},online:{conf:50,sil:700,minw:2}};
 
-function preset(name, btn) {
-  const p = PRESETS[name];
-  cfg = {...cfg, ...p};
+function preset(name,btn){
+  cfg={...cfg,...PRESETS[name]};
   syncSliders();
-  localStorage.setItem('tc_cfg', JSON.stringify(cfg));
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('on'));
+  localStorage.setItem('tc_cfg',JSON.stringify(cfg));
+  document.querySelectorAll('.pchip').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
 }
 
-/* ── API Key ──────────────────────────────────── */
-function onKey(v) {
-  clearTimeout(keyT);
-  keyT = setTimeout(() => {
-    const trimmed = v.trim();
-    if(trimmed) {
-      localStorage.setItem('tc_key', trimmed);
-      const n = el('saved-note');
-      n.textContent = '✓ Kaydedildi';
-      setTimeout(() => { n.textContent = ''; }, 2000);
-    } else {
-      localStorage.removeItem('tc_key');
-    }
-  }, 600);
+function syncSliders(){
+  $('cr').value=cfg.conf; $('cv').textContent=cfg.conf+'%';
+  $('sr').value=cfg.sil;  $('sv').textContent=cfg.sil+'ms';
+  $('mr').value=cfg.minw; $('mv').textContent=cfg.minw;
 }
 
-function getKey()  { return el('api-key').value.trim(); }
-function getCtx()  { return el('ctx-input').value.trim() || 'professional business meeting'; }
+// ── API key ───────────────────────────────────────────
+function onKey(v){
+  clearTimeout(keyT);
+  keyT=setTimeout(()=>{
+    const t=v.trim();
+    if(t){ localStorage.setItem('tc_key',t); showSaved('✓ Kaydedildi'); }
+    else  localStorage.removeItem('tc_key');
+  },600);
+}
+function showSaved(msg){ $('saved').textContent=msg; setTimeout(()=>$('saved').textContent='',2000); }
+function getKey(){ return $('api-key').value.trim(); }
+function getCtx(){ return $('ctx').value.trim()||'professional business meeting'; }
 
-/* ── Speech Recognition ───────────────────────── */
-function toggleMic() { listening ? stopMic() : startMic(); }
+// ── Speech Recognition ────────────────────────────────
+function toggleMic(){ listening ? stopMic() : startMic(); }
 
-function startMic() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR) { alert('Lütfen Chrome veya Edge kullanın.'); return; }
-
-  rec = new SR();
-  rec.lang = 'en-US';
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.maxAlternatives = 3;
-
-  rec.onresult = handleResult;
-  rec.onerror  = handleError;
-  rec.onstart  = () => setStatus('🎙️ Dinliyor…','on');
-  rec.onsoundstart  = () => setStatus('🔊 Ses algılandı…','on');
-  rec.onspeechstart = () => setStatus('💬 Tanıyor…','on');
-  rec.onsoundend    = () => setStatus('🎙️ Dinliyor…','on');
-  rec.onend = () => { if(listening) setTimeout(()=>{ try{rec.start()}catch(e){} }, 200); };
-
-  try { rec.start(); } catch(e) { setStatus('❌ '+e.message,'err'); return; }
-
-  listening = true;
-  el('mic-btn').classList.add('rec');
-  el('mic-btn').textContent = '⏹';
-  el('mic-lbl').textContent = 'Dinliyor';
+function startMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ alert('Lütfen Chrome veya Edge kullanın.'); return; }
+  rec=new SR();
+  rec.lang='en-US'; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=3;
+  rec.onresult=onResult;
+  rec.onerror=onError;
+  rec.onstart=()=>setStatus('🎙️ Dinliyor…','on');
+  rec.onsoundstart=()=>setStatus('🔊 Ses algılandı…','on');
+  rec.onspeechstart=()=>setStatus('💬 Tanıyor…','on');
+  rec.onsoundend=()=>setStatus('🎙️ Dinliyor…','on');
+  rec.onend=()=>{ if(listening) setTimeout(()=>{ try{rec.start()}catch(e){} },150); };
+  try{ rec.start(); }catch(e){ setStatus('❌ '+e.message,'err'); return; }
+  listening=true;
+  $('mic-btn').classList.add('rec'); $('mic-btn').textContent='⏹';
+  $('mic-lbl').textContent='Dinliyor';
   setStatus('🎙️ Başlatılıyor…','on');
 }
 
-function stopMic() {
-  listening = false;
-  if(rec) { try { rec.stop(); } catch(e){} rec = null; }
-  interimEl = null;   // don't try to remove — clearAll may have wiped it already
-  el('mic-btn').classList.remove('rec');
-  el('mic-btn').textContent = '🎙️';
-  el('mic-lbl').textContent = 'Başlat';
+function stopMic(){
+  listening=false;
+  if(rec){ try{rec.stop()}catch(e){} rec=null; }
+  iEl=null;
+  $('mic-btn').classList.remove('rec'); $('mic-btn').textContent='🎙️';
+  $('mic-lbl').textContent='Başlat';
   setStatus('Hazır','');
 }
 
-function handleResult(e) {
-  let itr = '';
-  for(let i = e.resultIndex; i < e.results.length; i++) {
-    let best = e.results[i][0];
-    for(let j=1; j<e.results[i].length; j++) {
-      if(e.results[i][j].confidence > best.confidence) best = e.results[i][j];
-    }
-    if(e.results[i].isFinal) {
-      const conf = best.confidence * 100;
-      const wc   = best.transcript.trim().split(/\s+/).length;
-      if(conf > 0 && conf < cfg.conf) continue;
-      if(wc < cfg.minw) continue;
-      pending += ' ' + best.transcript;
+function onResult(e){
+  let itr='';
+  for(let i=e.resultIndex;i<e.results.length;i++){
+    let best=e.results[i][0];
+    for(let j=1;j<e.results[i].length;j++){ if(e.results[i][j].confidence>best.confidence) best=e.results[i][j]; }
+    if(e.results[i].isFinal){
+      const conf=best.confidence*100, wc=best.transcript.trim().split(/\s+/).length;
+      if(conf>0&&conf<cfg.conf) continue;
+      if(wc<cfg.minw) continue;
+      pending+=' '+best.transcript;
       clearTimeout(debT);
-      debT = setTimeout(() => {
-        const t = pending.trim(); pending = '';
-        if(t.length > 2) { addOrig(t); translate(t); }
-      }, cfg.sil);
-    } else {
-      itr += best.transcript;
-    }
+      debT=setTimeout(()=>{ const t=pending.trim(); pending=''; if(t.length>2){ addOrig(t); doTr(t); } },cfg.sil);
+    } else { itr+=best.transcript; }
   }
   showInterim(itr);
 }
 
-function handleError(e) {
-  const msgs = {
-    'not-allowed':        '❌ Mikrofon izni reddedildi',
-    'audio-capture':      '❌ Mikrofon bulunamadı',
-    'network':            '❌ Ağ hatası',
-    'service-not-allowed':'❌ Bu sayfada izin verilmiyor',
-  };
-  if(msgs[e.error]) { setStatus(msgs[e.error],'err'); stopMic(); }
+function onError(e){
+  const m={'not-allowed':'❌ Mikrofon izni reddedildi','audio-capture':'❌ Mikrofon bulunamadı','network':'❌ Ağ hatası','service-not-allowed':'❌ Sayfada izin verilmiyor'};
+  if(m[e.error]){ setStatus(m[e.error],'err'); stopMic(); }
 }
 
-/* ── Transcript UI ────────────────────────────── */
-function showInterim(text) {
-  const area = el('orig-area');
-  if(!text) {
-    if(interimEl && interimEl.parentNode === area) interimEl.style.opacity = '.5';
-    return;
+// ── Transcript UI ─────────────────────────────────────
+function showInterim(text){
+  const area=$('orig');
+  if(!text){ if(iEl&&iEl.parentNode===area) iEl.style.opacity='.5'; return; }
+  if(!iEl||iEl.parentNode!==area){
+    iEl=document.createElement('div'); iEl.className='bbl interim'; area.appendChild(iEl);
   }
-  if(!interimEl || interimEl.parentNode !== area) {
-    // Create fresh interim bubble
-    interimEl = document.createElement('div');
-    interimEl.className = 'bubble interim';
-    area.appendChild(interimEl);
-  }
-  interimEl.textContent = text + '…';
-  area.scrollTop = area.scrollHeight;
+  iEl.textContent=text+'…'; area.scrollTop=area.scrollHeight;
 }
 
-function addOrig(text) {
-  const area = el('orig-area');
-  if(!hasOrig) { area.innerHTML = ''; hasOrig = true; }
-  // Remove stale interim
-  if(interimEl && interimEl.parentNode === area) { interimEl.remove(); }
-  interimEl = null;
-
-  const si = activeSp;
-  const b = document.createElement('div');
-  b.className = `bubble s${si}`;
-  b.innerHTML = `<div class="bmeta"><span class="btime">${now()}</span><span class="btag s${si}">${x(speakers[si])}</span></div>${x(text)}`;
-  area.appendChild(b);
-  area.scrollTop = area.scrollHeight;
+function addOrig(text){
+  const area=$('orig');
+  if(!hasOrig){ area.innerHTML=''; hasOrig=true; }
+  if(iEl&&iEl.parentNode===area){ iEl.remove(); } iEl=null;
+  const si=activeSp, b=document.createElement('div');
+  b.className='bbl s'+si;
+  b.innerHTML=`<div class="bmeta"><span class="btime">${now()}</span><span class="btag t${si}">${x(speakers[si])}</span></div>${x(text)}`;
+  area.appendChild(b); area.scrollTop=area.scrollHeight;
 }
 
-function addTr(text, si) {
-  const area = el('tr-area');
-  if(!hasTr) { area.innerHTML = ''; hasTr = true; }
-
-  const b = document.createElement('div');
-  b.className = `bubble tr s${si}`;
-  b.innerHTML = `<div class="bmeta"><span class="btime">${now()}</span><span class="btag s${si}">${x(speakers[si])}</span></div>${x(text)}`;
-  area.appendChild(b);
-  area.scrollTop = area.scrollHeight;
+function addTr(text,si){
+  const area=$('tr');
+  if(!hasTr){ area.innerHTML=''; hasTr=true; }
+  const b=document.createElement('div');
+  b.className='bbl en-tr s'+si;
+  b.innerHTML=`<div class="bmeta"><span class="btime">${now()}</span><span class="btag t${si}">${x(speakers[si])}</span></div>${x(text)}`;
+  area.appendChild(b); area.scrollTop=area.scrollHeight;
 }
 
-function addLoading(area) {
-  const b = document.createElement('div');
-  b.className = 'bubble tr';
-  b.innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-  area.appendChild(b);
-  area.scrollTop = area.scrollHeight;
+function addLoader(area){
+  const b=document.createElement('div'); b.className='bbl en-tr';
+  b.innerHTML='<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  area.appendChild(b); area.scrollTop=area.scrollHeight;
   return b;
 }
 
-/* ── Translation: EN→TR ───────────────────────── */
-function buildCtx() {
-  const recent = log.slice(-6);
-  if(!recent.length) return '';
-  return '\n\nÖnceki konuşma:\n' + recent.map(e => `[${e.sp}]: ${e.orig}`).join('\n');
+// ── Translation EN→TR ─────────────────────────────────
+function buildCtx(){
+  const r=log.slice(-6); if(!r.length) return '';
+  return '\n\nÖnceki konuşma:\n'+r.map(e=>`[${e.sp}]: ${e.orig}`).join('\n');
 }
 
-async function translate(text) {
-  const k = getKey();
-  const si = activeSp;
-  const area = el('tr-area');
-  if(!hasTr) { area.innerHTML = ''; hasTr = true; }
-  const loader = addLoading(area);
-  if(!k) { loader.remove(); addTr('[API key girilmedi — Ayarlar sekmesine gir]', si); return; }
-  try {
-    const r = await claude(k,
-      `Meeting context: "${getCtx()}".${buildCtx()}\n\nTranslate to natural Turkish. Return ONLY the translation.\n\n[${speakers[si]}]: ${text}`
-    );
-    loader.remove();
-    addTr(r, si);
-    log.push({time:now(), sp:speakers[si], si, orig:text, tr:r});
-  } catch(e) {
-    loader.remove();
-    addTr('[Hata: ' + e.message + ']', si);
-  }
+async function doTr(text){
+  const k=getKey(), si=activeSp;
+  const area=$('tr');
+  if(!hasTr){ area.innerHTML=''; hasTr=true; }
+  const loader=addLoader(area);
+  if(!k){ loader.remove(); addTr('[API key girilmedi — Ayarlar sekmesine gir]',si); return; }
+  try{
+    const r=await callClaude(k,`Meeting context: "${getCtx()}".${buildCtx()}\n\nTranslate to natural Turkish. Return ONLY the translation.\n\n[${speakers[si]}]: ${text}`);
+    loader.remove(); addTr(r,si);
+    log.push({time:now(),sp:speakers[si],si,orig:text,tr:r});
+  }catch(e){ loader.remove(); addTr('[Hata: '+e.message+']',si); }
 }
 
-/* ── Reply translation TR→EN ──────────────────── */
-function onReplyInput() {
-  const t = this.value.trim();
-  const out = el('reply-out');
-  if(!t) {
-    out.textContent = 'İngilizce çeviri burada belirecek…';
-    out.classList.remove('filled');
-    lastReply = '';
-    return;
-  }
-  clearTimeout(replyT);
-  replyT = setTimeout(() => {
-    if(t !== lastReply) { lastReply = t; translateReply(t); }
-  }, 450);
-}
-async function translateReply(text) {
-  const k = getKey();
-  const out = el('reply-out');
-  const dots = el('tr-dots');
-  if(!k) {
-    out.innerHTML = '<span style="color:var(--red)">API key girilmedi — Ayarlar sekmesine gir</span>';
-    out.classList.remove('filled');
-    return;
-  }
-  dots.style.display = 'flex';
-  try {
-    const r = await claude(k,
-      `Translate this Turkish text to natural professional English for a business meeting. Return ONLY the translation.\n\nTurkish: ${text}`
-    );
-    dots.style.display = 'none';
-    out.textContent = r;
-    out.classList.add('filled');
-  } catch(e) {
-    dots.style.display = 'none';
-    out.innerHTML = `<span style="color:var(--red)">${x(e.message)}</span>`;
-    out.classList.remove('filled');
-  }
+// ── Reply TR→EN ───────────────────────────────────────
+function onReplyInput(){
+  const t=this.value.trim(), out=$('rout');
+  if(!t){ out.textContent='İngilizce çeviri burada belirecek…'; out.classList.remove('filled'); lastR=''; return; }
+  clearTimeout(rTimer);
+  rTimer=setTimeout(()=>{ if(t!==lastR){ lastR=t; trReply(t); } },450);
 }
 
-/* ── Claude API ───────────────────────────────── */
-async function claude(key, prompt) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      messages: [{ role:'user', content:prompt }],
-    }),
-  });
-  const data = await res.json();
-  if(data.error) throw new Error(data.error.message);
-  return (data.content||[]).map(c => c.text||'').join('').trim();
+async function trReply(text){
+  const k=getKey(), out=$('rout'), dots=$('rdots');
+  if(!k){ out.innerHTML='<span style="color:var(--red)">API key girilmedi</span>'; out.classList.remove('filled'); return; }
+  dots.style.display='flex';
+  try{
+    const r=await callClaude(k,`Translate this Turkish text to natural professional English for a business meeting. Return ONLY the translation.\n\nTurkish: ${text}`);
+    dots.style.display='none'; out.textContent=r; out.classList.add('filled');
+  }catch(e){ dots.style.display='none'; out.innerHTML=`<span style="color:var(--red)">${x(e.message)}</span>`; out.classList.remove('filled'); }
 }
 
-/* ── Export ───────────────────────────────────── */
-function exportTxt() {
-  if(!log.length) { toast('Henüz kaydedilecek transkript yok'); return; }
-  let txt = `TERCÜMAN — Toplantı Transkripti\n`;
-  txt += `Konu: ${getCtx()}\nTarih: ${new Date().toLocaleDateString('tr-TR')}\n`;
-  txt += '─'.repeat(50) + '\n\n';
-  log.forEach(e => { txt += `[${e.time}] ${e.sp}\nEN: ${e.orig}\nTR: ${e.tr}\n\n`; });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([txt], {type:'text/plain;charset=utf-8'}));
-  a.download = `tercuman_${new Date().toLocaleDateString('tr-TR').replace(/\./g,'-')}.txt`;
-  a.click();
-  toast('✓ İndirildi');
+// ── Claude API ────────────────────────────────────────
+async function callClaude(key,prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:512,messages:[{role:'user',content:prompt}]})});
+  const d=await res.json(); if(d.error) throw new Error(d.error.message);
+  return (d.content||[]).map(c=>c.text||'').join('').trim();
 }
 
-/* ── Misc ─────────────────────────────────────── */
-function copyReply() {
-  const out = el('reply-out');
-  if(!out.classList.contains('filled')) { toast('Önce bir şeyler yaz'); return; }
-  navigator.clipboard.writeText(out.textContent).then(() => toast('✓ Kopyalandı'));
+// ── Misc ──────────────────────────────────────────────
+function copyReply(){
+  const out=$('rout');
+  if(!out.classList.contains('filled')){ toast('Önce bir şeyler yaz'); return; }
+  navigator.clipboard.writeText(out.textContent).then(()=>toast('✓ Kopyalandı'));
 }
 
-function clearAll() {
-  // Reset orig area
-  el('orig-area').innerHTML = '<div class="empty"><div class="empty-ico">🎙️</div>Mikrofonu başlat.<br>İngilizce konuşmalar burada görünür.</div>';
-  el('tr-area').innerHTML   = '<div class="empty"><div class="empty-ico">🌐</div>Çeviri burada görünür.</div>';
-  hasOrig = false; hasTr = false;
-  interimEl = null;  // was in origArea which is now replaced
-  log = [];
+function clearAll(){
+  $('orig').innerHTML='<div class="empty-feed"><div class="empty-ico">🎙️</div>Mikrofonu başlat.<br>İngilizce konuşmalar burada görünür.</div>';
+  $('tr').innerHTML='<div class="empty-feed"><div class="empty-ico">🌐</div>Çeviri burada görünür.</div>';
+  hasOrig=false; hasTr=false; iEl=null; log=[];
   toast('Temizlendi');
 }
 
-function setStatus(text, type) {
-  el('status-text').textContent = text;
-  el('status-pill').className = type==='on' ? 'on' : type==='err' ? 'err' : '';
+function exportTxt(){
+  if(!log.length){ toast('Henüz kaydedilecek transkript yok'); return; }
+  let txt=`TERCÜMAN — Toplantı Transkripti\nKonu: ${getCtx()}\nTarih: ${new Date().toLocaleDateString('tr-TR')}\n${'─'.repeat(50)}\n\n`;
+  log.forEach(e=>{ txt+=`[${e.time}] ${e.sp}\nEN: ${e.orig}\nTR: ${e.tr}\n\n`; });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download=`tercuman_${new Date().toLocaleDateString('tr-TR').replace(/\./g,'-')}.txt`;
+  a.click(); toast('✓ İndirildi');
 }
 
-function toast(msg) {
-  const t = el('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+function setStatus(text,type){
+  $('pill-txt').textContent=text;
+  $('pill').className=type==='on'?'on':type==='err'?'err':'';
 }
 
-function now() {
-  return new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2000);
 }
-function x(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function el(id) { return document.getElementById(id); }
+
+function now(){ return new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function x(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
