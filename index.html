@@ -109,6 +109,7 @@ body { height:100%; font-family:var(--font); background:var(--bg); color:var(--i
   overflow-x:auto;
 }
 #spk-row::-webkit-scrollbar { display:none; }
+#chips { display:contents; } /* chips render inline in flex row */
 .spk-lbl { font-size:10px; font-weight:700; color:var(--pale); text-transform:uppercase; letter-spacing:.8px; white-space:nowrap; flex-shrink:0; }
 .chip {
   padding:5px 13px; border-radius:20px;
@@ -118,10 +119,35 @@ body { height:100%; font-family:var(--font); background:var(--bg); color:var(--i
   transition:all .15s;
 }
 .chip.on { color:#fff; border-color:transparent; }
-.chip[data-i="0"].on { background:var(--sp0); }
-.chip[data-i="1"].on { background:var(--sp1); }
-.chip[data-i="2"].on { background:var(--sp2); }
-.chip[data-i="3"].on { background:var(--sp3); }
+/* chip active colors injected dynamically by injectChipColors() */
+
+/* Inline name edit input inside chip */
+.chip-input {
+  background:transparent; border:none; outline:none;
+  font-family:var(--font); font-size:12px; font-weight:700;
+  color:inherit; width:80px; min-width:40px;
+  padding:0; margin:0;
+}
+.chip.editing { padding:5px 10px; }
+.chip-hint {
+  font-size:10px; color:var(--pale); white-space:nowrap;
+  margin-left:2px; flex-shrink:0;
+}
+/* Add speaker button */
+.chip-add {
+  padding:5px 11px; border-radius:20px;
+  border:1.5px dashed var(--border); background:transparent;
+  font-family:var(--font); font-size:12px; font-weight:700; color:var(--pale);
+  cursor:pointer; touch-action:manipulation; white-space:nowrap; flex-shrink:0;
+  transition:all .15s;
+}
+.chip-add:hover, .chip-add:active { border-color:var(--blue); color:var(--blue); }
+/* Delete x on chip (shows on hover / when active) */
+.chip-del {
+  margin-left:5px; font-size:11px; line-height:1;
+  opacity:0; transition:opacity .15s; display:inline-block;
+}
+.chip:hover .chip-del, .chip.on .chip-del { opacity:.7; }
 
 /* Transcript area: fills remaining space above reply box */
 #transcript {
@@ -161,14 +187,11 @@ body { height:100%; font-family:var(--font); background:var(--bg); color:var(--i
 @keyframes pop { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 .bbl.interim { color:var(--pale); font-style:italic; font-size:13px; }
 .bbl.en-tr   { background:var(--green-lt); border-left-color:var(--green); color:#14532d; }
-.bbl.s0 { background:var(--sp0l); border-left-color:var(--sp0); }
-.bbl.s1 { background:var(--sp1l); border-left-color:var(--sp1); }
-.bbl.s2 { background:var(--sp2l); border-left-color:var(--sp2); }
-.bbl.s3 { background:var(--sp3l); border-left-color:var(--sp3); }
+/* bubble and tag colors injected dynamically by injectChipColors() */
 .bmeta { display:flex; align-items:center; gap:5px; margin-bottom:3px; }
 .btime { font-size:10px; color:var(--pale); }
 .btag  { font-size:10px; font-weight:700; padding:1px 6px; border-radius:8px; color:#fff; }
-.t0{background:var(--sp0)} .t1{background:var(--sp1)} .t2{background:var(--sp2)} .t3{background:var(--sp3)}
+/* .t0-.tN colors injected dynamically */
 .ttr{background:var(--green)}
 .empty-feed {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -369,13 +392,12 @@ input[type="range"]::-webkit-slider-thumb {
 <!-- ══ SCREEN A: ANA EKRAN ══ -->
 <div id="sA" class="scr on">
 
-  <!-- Speaker chips -->
+  <!-- Speaker chips — rendered dynamically by JS -->
   <div id="spk-row">
     <span class="spk-lbl">Konuşan:</span>
-    <button class="chip on" data-i="0" id="c0" onclick="pickSp(0)">Kişi 1</button>
-    <button class="chip"    data-i="1" id="c1" onclick="pickSp(1)">Kişi 2</button>
-    <button class="chip"    data-i="2" id="c2" onclick="pickSp(2)">Kişi 3</button>
-    <button class="chip"    data-i="3" id="c3" onclick="pickSp(3)">Kişi 4</button>
+    <div id="chips"></div>
+    <button class="chip-add" id="add-sp" onclick="addSpeaker()">+ Ekle</button>
+    <span class="chip-hint">uzun bas = düzenle</span>
   </div>
 
   <!-- Transcript (EN + TR side by side) -->
@@ -440,12 +462,7 @@ input[type="range"]::-webkit-slider-thumb {
   <div class="scard">
     <div class="sc-title">👤 Konuşmacılar</div>
     <div class="sc-body">
-      <div class="spk-grid">
-        <div class="spk-item"><div class="sp-dot" style="background:var(--sp0)"></div><input type="text" id="sp0" value="Kişi 1" oninput="onSpName(0)"></div>
-        <div class="spk-item"><div class="sp-dot" style="background:var(--sp1)"></div><input type="text" id="sp1" value="Kişi 2" oninput="onSpName(1)"></div>
-        <div class="spk-item"><div class="sp-dot" style="background:var(--sp2)"></div><input type="text" id="sp2" value="Kişi 3" oninput="onSpName(2)"></div>
-        <div class="spk-item"><div class="sp-dot" style="background:var(--sp3)"></div><input type="text" id="sp3" value="Kişi 4" oninput="onSpName(3)"></div>
-      </div>
+      <div class="f-hint" style="color:var(--sub);font-size:13px">Ana ekranda konuşmacı ismine <strong>uzun basın</strong> veya <strong>çift tıklayın</strong> — ismi doğrudan düzenleyebilirsiniz.</div>
     </div>
   </div>
 
@@ -534,19 +551,129 @@ function goTo(i){
   [$('n0'),$('n1')].forEach((b,j)=>{ b.classList.toggle('on',j===i); });
 }
 
+// ── Speaker color palette (unlimited) ────────────────
+const SP_PALETTE = [
+  {bg:'#3B6FF0',lt:'#EEF2FF'},
+  {bg:'#7C3AED',lt:'#F5F3FF'},
+  {bg:'#0891B2',lt:'#ECFEFF'},
+  {bg:'#D97706',lt:'#FFFBEB'},
+  {bg:'#DC2626',lt:'#FFF5F5'},
+  {bg:'#16A349',lt:'#EDFAF3'},
+  {bg:'#9333EA',lt:'#FAF5FF'},
+  {bg:'#EA580C',lt:'#FFF7ED'},
+  {bg:'#0D9488',lt:'#F0FDFA'},
+  {bg:'#BE185D',lt:'#FDF2F8'},
+];
+function spColor(i){ return SP_PALETTE[i % SP_PALETTE.length]; }
+
 // ── Speakers ─────────────────────────────────────────
 function pickSp(i){ activeSp=i; syncChips(); }
 
-function onSpName(i){
-  speakers[i]=$('sp'+i).value.trim()||('Kişi '+(i+1));
+function addSpeaker(){
+  const n=speakers.length;
+  speakers.push('Kişi '+(n+1));
+  localStorage.setItem('tc_sp',JSON.stringify(speakers));
+  syncChips();
+  // auto-start editing new chip
+  setTimeout(()=>startEdit(n),50);
+}
+
+function removeSpeaker(i,e){
+  e.stopPropagation();
+  if(speakers.length<=1) return;
+  speakers.splice(i,1);
+  if(activeSp>=speakers.length) activeSp=speakers.length-1;
   localStorage.setItem('tc_sp',JSON.stringify(speakers));
   syncChips();
 }
 
 function syncChips(){
-  for(let i=0;i<4;i++){
-    const c=$('c'+i); c.textContent=speakers[i]; c.classList.toggle('on',i===activeSp);
-  }
+  const container=$('chips');
+  // Rebuild chips DOM completely — simple and reliable
+  container.innerHTML='';
+  speakers.forEach((name,i)=>{
+    const col=spColor(i);
+    const btn=document.createElement('button');
+    btn.className='chip'+(i===activeSp?' on':'');
+    btn.dataset.i=i;
+    btn.id='c'+i;
+    btn.style.setProperty('--ci-bg', col.bg);
+    btn.style.setProperty('--ci-lt', col.lt);
+    btn.textContent=name;
+    // × delete button (only if >1 speaker)
+    if(speakers.length>1){
+      const del=document.createElement('span');
+      del.className='chip-del';
+      del.textContent='×';
+      del.addEventListener('click',e=>removeSpeaker(i,e));
+      btn.appendChild(del);
+    }
+    container.appendChild(btn);
+    attachChipEvents(btn,i);
+  });
+  // inject per-chip colors via CSS var
+  injectChipColors();
+}
+
+function injectChipColors(){
+  // Build dynamic style for each chip index
+  let css='';
+  speakers.forEach((_,i)=>{
+    const col=spColor(i);
+    css+=`.chip[data-i="${i}"].on{background:${col.bg};border-color:${col.bg};}`;
+    css+=`.bbl.s${i}{background:${col.lt};border-left-color:${col.bg};}`;
+    css+=`.btag.t${i}{background:${col.bg};}`;
+  });
+  let styleEl=document.getElementById('dyn-colors');
+  if(!styleEl){ styleEl=document.createElement('style'); styleEl.id='dyn-colors'; document.head.appendChild(styleEl); }
+  styleEl.textContent=css;
+}
+
+// Update all speaker tags already in transcript for index i
+function updateTranscriptTags(i){
+  document.querySelectorAll(`.btag.t${i}`).forEach(el=>{ el.textContent=speakers[i]; });
+}
+
+// ── Chip inline edit ──────────────────────────────────
+let lpTimer=null;
+
+function attachChipEvents(btn,i){
+  btn.addEventListener('click', ()=>{ if(!btn.classList.contains('editing')) pickSp(i); });
+  btn.addEventListener('dblclick', e=>{ e.preventDefault(); startEdit(i); });
+  btn.addEventListener('pointerdown', ()=>{ lpTimer=setTimeout(()=>startEdit(i), 500); });
+  btn.addEventListener('pointerup',   ()=>{ clearTimeout(lpTimer); });
+  btn.addEventListener('pointerleave',()=>{ clearTimeout(lpTimer); });
+}
+
+function startEdit(i){
+  const btn=$('c'+i);
+  if(!btn||btn.classList.contains('editing')) return;
+  btn.classList.add('editing');
+  const inp=document.createElement('input');
+  inp.className='chip-input';
+  inp.value=speakers[i];
+  inp.maxLength=20;
+  // clear text but keep × button if present
+  const delEl=btn.querySelector('.chip-del');
+  btn.textContent='';
+  btn.appendChild(inp);
+  if(delEl) btn.appendChild(delEl);
+  inp.focus(); inp.select();
+
+  const commit=()=>{
+    const v=inp.value.trim()||speakers[i];
+    speakers[i]=v;
+    localStorage.setItem('tc_sp',JSON.stringify(speakers));
+    syncChips(); // rebuilds all chips
+    updateTranscriptTags(i);
+  };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); inp.blur(); }
+    if(e.key==='Escape'){ inp.value=speakers[i]; inp.blur(); }
+    e.stopPropagation();
+  });
+  inp.addEventListener('click', e=>e.stopPropagation());
 }
 
 // ── Settings ─────────────────────────────────────────
