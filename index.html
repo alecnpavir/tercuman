@@ -474,7 +474,7 @@ input[type="range"]::-webkit-slider-thumb {
         <div class="rh-head bl">
           <span class="rh-lbl">🇹🇷 Türkçe</span>
         </div>
-        <textarea id="rin" placeholder="Türkçe yanıtını yaz…"></textarea>
+        <textarea id="rin" oninput="onReplyInput()" placeholder="Türkçe yanıtını yaz…"></textarea>
       </div>
       <div class="reply-half">
         <div class="rh-head gr">
@@ -720,7 +720,6 @@ function syncPresetButtons(){
   // Glossary
   try{var g=localStorage.getItem('tc_gloss');if(g&&$('glossary')) $('glossary').value=g;}catch(e){}
   restoreSession();
-  $('rin').addEventListener('input',onReplyInput);
 })();
 
 function goTo(i){
@@ -923,19 +922,22 @@ async function doTr(text){
 
 // ── Reply TR→EN ──
 function onReplyInput(){
-  var t=$('rin').value.trim(),out=$('rout');
+  var rin=$('rin');if(!rin)return;
+  var t=rin.value.trim(),out=$('rout');
   if(!t){out.textContent='İngilizce çeviri burada belirecek…';out.classList.remove('filled');lastR='';return;}
-  clearTimeout(rTimer);rTimer=setTimeout(function(){if(t!==lastR){lastR=t;trReply(t);}},450);
+  clearTimeout(rTimer);
+  rTimer=setTimeout(function(){if(t!==lastR){lastR=t;trReply(t);}},450);
 }
 async function trReply(text){
   var k=getKey(),out=$('rout'),dots=$('rdots');
-  if(!k){out.innerHTML='<span style="color:var(--red)">API key girilmedi</span>';out.classList.remove('filled');return;}
-  dots.style.display='flex';out.textContent='';out.classList.add('filled');
+  if(!k){out.textContent='[API key girilmedi — Ayarlar\'a gir]';out.classList.add('filled');return;}
+  dots.style.display='flex';out.textContent='Çevriliyor…';out.classList.add('filled');
   try{
     var full='';
     await callClaudeStream(k,'Translate to English:\n\n<input>\n'+text+'\n</input>',function(chunk){full+=chunk;out.textContent=full;},buildTrEnSystem());
     dots.style.display='none';
-  }catch(e){dots.style.display='none';out.innerHTML='<span style="color:var(--red)">'+x(e.message)+'</span>';out.classList.remove('filled');}
+    if(!full) out.textContent='[Boş yanıt döndü]';
+  }catch(e){dots.style.display='none';out.textContent='[Hata: '+e.message+']';out.classList.add('filled');}
 }
 
 // ── Claude API ──
