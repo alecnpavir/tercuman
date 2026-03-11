@@ -258,7 +258,7 @@ body { height:100%; font-family:var(--font); background:var(--bg); color:var(--i
 
 #reply-box {
   display:none; flex-direction:column;
-  height:140px;
+  height:220px;
 }
 #reply-wrap.open #reply-box { display:flex; }
 
@@ -923,7 +923,7 @@ async function doTr(text){
 
 // ── Reply TR→EN ──
 function onReplyInput(){
-  var t=this.value.trim(),out=$('rout');
+  var t=$('rin').value.trim(),out=$('rout');
   if(!t){out.textContent='İngilizce çeviri burada belirecek…';out.classList.remove('filled');lastR='';return;}
   clearTimeout(rTimer);rTimer=setTimeout(function(){if(t!==lastR){lastR=t;trReply(t);}},450);
 }
