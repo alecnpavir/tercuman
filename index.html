@@ -611,7 +611,15 @@ function dismissBanner(){
   try{ const s=localStorage.getItem('tc_cfg'); if(s) cfg={...cfg,...JSON.parse(s)}; }catch(e){}
   syncSliders();
 
-  try{ const s=localStorage.getItem('tc_sp'); if(s){ speakers=JSON.parse(s); } }catch(e){}
+  try{
+    const s=localStorage.getItem('tc_sp');
+    if(s){
+      const loaded=JSON.parse(s);
+      // cap at 8 to fix any previous bloat
+      speakers=Array.isArray(loaded) ? loaded.slice(0,8) : speakers;
+      localStorage.setItem('tc_sp',JSON.stringify(speakers));
+    }
+  }catch(e){}
   syncChips();
 
   restoreSession();
@@ -721,12 +729,12 @@ function updateTranscriptTags(i){
 // ── Chip inline edit ──────────────────────────────────
 
 function attachChipEvents(btn,i){
-  let lp=null;
-  btn.addEventListener('click', ()=>{ if(!btn.classList.contains('editing')) pickSp(i); });
-  btn.addEventListener('dblclick', e=>{ e.preventDefault(); startEdit(i); });
-  btn.addEventListener('pointerdown', ()=>{ lp=setTimeout(()=>startEdit(i), 500); });
+  let lp=null, didLp=false;
+  btn.addEventListener('pointerdown', ()=>{ didLp=false; lp=setTimeout(()=>{ didLp=true; startEdit(i); }, 600); });
   btn.addEventListener('pointerup',   ()=>{ clearTimeout(lp); });
   btn.addEventListener('pointerleave',()=>{ clearTimeout(lp); });
+  btn.addEventListener('click', ()=>{ if(didLp){ didLp=false; return; } if(!btn.classList.contains('editing')) pickSp(i); });
+  btn.addEventListener('dblclick', e=>{ e.preventDefault(); clearTimeout(lp); startEdit(i); });
 }
 
 function startEdit(i){
@@ -774,25 +782,30 @@ const PRESETS={quiet:{conf:30,sil:600,minw:1},normal:{conf:60,sil:800,minw:2},no
 
 function preset(name){
   if(!PRESETS[name]) return;
-  cfg={...cfg,...PRESETS[name]};
+  cfg=Object.assign({}, cfg, PRESETS[name]);
   syncSliders();
-  localStorage.setItem('tc_cfg',JSON.stringify(cfg));
+  try{ localStorage.setItem('tc_cfg',JSON.stringify(cfg)); }catch(e){}
   document.querySelectorAll('.pchip').forEach(b=>{
     b.classList.toggle('on', b.dataset.preset===name);
   });
 }
 
-// Wire preset buttons — called once DOM ready
 function initPresets(){
-  document.querySelectorAll('.pchip[data-preset]').forEach(btn=>{
-    btn.addEventListener('click', function(){ preset(this.dataset.preset); });
+  const btns=document.querySelectorAll('.pchip[data-preset]');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      preset(this.dataset.preset);
+    });
   });
 }
 
 function syncSliders(){
-  $('cr').value=cfg.conf; $('cv').textContent=cfg.conf+'%';
-  $('sr').value=cfg.sil;  $('sv').textContent=cfg.sil+'ms';
-  $('mr').value=cfg.minw; $('mv').textContent=cfg.minw;
+  try{
+    $('cr').value=cfg.conf; $('cv').textContent=cfg.conf+'%';
+    $('sr').value=cfg.sil;  $('sv').textContent=cfg.sil+'ms';
+    $('mr').value=cfg.minw; $('mv').textContent=cfg.minw;
+  }catch(e){}
 }
 
 // ── API key ───────────────────────────────────────────
