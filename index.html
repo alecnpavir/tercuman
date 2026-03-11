@@ -487,10 +487,10 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="field">
         <div class="f-lbl">Hızlı Seç</div>
         <div class="preset-row">
-          <button type="button" class="pchip" data-preset="quiet">🔕 Sessiz</button>
-          <button type="button" class="pchip on" data-preset="normal">🏢 Normal</button>
-          <button type="button" class="pchip" data-preset="noisy">🔊 Gürültülü</button>
-          <button type="button" class="pchip" data-preset="online">💻 Online</button>
+          <button type="button" class="pchip" id="pc-quiet"  onclick="applyPreset('quiet')">🔕 Sessiz</button>
+          <button type="button" class="pchip on" id="pc-normal" onclick="applyPreset('normal')">🏢 Normal</button>
+          <button type="button" class="pchip" id="pc-noisy"  onclick="applyPreset('noisy')">🔊 Gürültülü</button>
+          <button type="button" class="pchip" id="pc-online" onclick="applyPreset('online')">💻 Online</button>
         </div>
       </div>
     </div>
@@ -625,7 +625,6 @@ function dismissBanner(){
   restoreSession();
 
   $('rin').addEventListener('input', onReplyInput);
-  initPresets();
 
 })();
 
@@ -780,23 +779,24 @@ function onCfg(key,val){
 
 const PRESETS={quiet:{conf:30,sil:600,minw:1},normal:{conf:60,sil:800,minw:2},noisy:{conf:75,sil:1200,minw:3},online:{conf:50,sil:700,minw:2}};
 
-function preset(name){
+function applyPreset(name){
   if(!PRESETS[name]) return;
-  cfg=Object.assign({}, cfg, PRESETS[name]);
-  syncSliders();
+  cfg.conf=PRESETS[name].conf;
+  cfg.sil=PRESETS[name].sil;
+  cfg.minw=PRESETS[name].minw;
+  // update sliders
+  var cr=$('cr'), sr=$('sr'), mr=$('mr');
+  if(cr) cr.value=cfg.conf;
+  if(sr) sr.value=cfg.sil;
+  if(mr) mr.value=cfg.minw;
+  $('cv').textContent=cfg.conf+'%';
+  $('sv').textContent=cfg.sil+'ms';
+  $('mv').textContent=cfg.minw;
   try{ localStorage.setItem('tc_cfg',JSON.stringify(cfg)); }catch(e){}
-  document.querySelectorAll('.pchip').forEach(b=>{
-    b.classList.toggle('on', b.dataset.preset===name);
-  });
-}
-
-function initPresets(){
-  const btns=document.querySelectorAll('.pchip[data-preset]');
-  btns.forEach(function(btn){
-    btn.addEventListener('click', function(e){
-      e.preventDefault();
-      preset(this.dataset.preset);
-    });
+  // update button states
+  ['quiet','normal','noisy','online'].forEach(function(p){
+    var b=$('pc-'+p);
+    if(b) b.className='pchip'+(p===name?' on':'');
   });
 }
 
@@ -912,8 +912,8 @@ function addLoader(area){
 
 // ── Translation EN→TR ─────────────────────────────────
 function buildCtx(){
-  const r=log.slice(-6); if(!r.length) return '';
-  return '\n\nÖnceki konuşma:\n'+r.map(e=>`[${e.sp}]: ${e.orig}`).join('\n');
+  const r=log.slice(-4); if(!r.length) return '';
+  return '\n\nPrevious lines for context only (do NOT translate these again):\n'+r.map(e=>`${e.orig}`).join('\n');
 }
 
 async function doTr(text){
@@ -922,8 +922,10 @@ async function doTr(text){
   if(!hasTr){ area.innerHTML=''; hasTr=true; }
   const loader=addLoader(area);
   if(!k){ loader.remove(); addTr('[API key girilmedi — Ayarlar sekmesine gir]',si); return; }
+  const ctx=getCtx();
+  const prompt=`You are a translator. Translate ONLY the following English text to Turkish. Output the Turkish translation and nothing else. Do not add greetings, explanations, or extra content.${ctx?'\n\nMeeting topic: '+ctx:''}${buildCtx()}\n\nEnglish text to translate: ${text}\n\nTurkish translation:`;
   try{
-    const r=await callClaude(k,`Meeting context: "${getCtx()}".${buildCtx()}\n\nTranslate to natural Turkish. Return ONLY the translation.\n\n[${speakers[si]}]: ${text}`);
+    const r=await callClaude(k,prompt);
     loader.remove(); addTr(r,si);
     log.push({time:now(),sp:speakers[si],si,orig:text,tr:r});
     saveSession();
